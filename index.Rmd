@@ -50,7 +50,6 @@ Modelo Lineal Generalizados (II)
 -->
 ```
 
-------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 
@@ -83,7 +82,7 @@ Según la información proporcionada en el repositorio, esta es la metadata:
 
 Esta investigación hipotetiza que:
 
-> El ofrecerse como voluntario está relaciondo con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
+> El ofrecerse como voluntario está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
 
 Hasta ahora hemos querido modelar variables de medición y conteos, pero como vemos, en la data la variable dependiente es *volunteer* (ofrecerse como voluntario), la cuál es dicotómica. Esto no puede ser tratado con las técnicas anteriores [@magallanes_estadistica-analisispoliticosesion2_2022-1; @magallanes_estadistica-analisispoliticosesion3_2022].
 
@@ -107,7 +106,9 @@ Tengamos en cuenta que R siempre almacena las categóricas internamente como nú
 
 # Probabilidades y ODDS
 
-Hipotesizemos que: \> Ser mujer está relacionado con ser voluntario en proyectos de investigación.
+Hipotesizemos que:
+
+> Ser mujer está relacionado con ser voluntario en proyectos de investigación.
 
 Al ser ambas categóricas, y ser la hipótesis asimétrica o direccional, preparemos una tabla de contingencia que muestre ello:
 
@@ -165,7 +166,7 @@ ProbMujVol/(1-ProbMujVol)
 
 B. Probabilidad y Odds para caso del hombre:
 
--   Probabilidad que una hombre sea voluntario
+-   Probabilidad que un hombre sea voluntario
 
 ```{r, echo=TRUE}
 ProbHomVol=volsexTable[2,2]/sum(volsexTable[,2])
@@ -193,7 +194,7 @@ Hasta aquí ya sabemos cuál odds ha salido mayor. Eso es información clara. Pa
 (OR_MujHom=OddsMujVol/OddsHomVol)
 ```
 
-Con ese valor, ya sabemos que el odds de ser mujer es 0.28 por encima del odds del hombre. El odds ratio (OR) puede ir de 0 a infinito. Un OR de 1 implica que no hay diferencias.
+Con ese valor, ya sabemos que el odds de ser mujer es `r round(abs(1-OR_MujHom),5)` veces el odds del hombre. El odds ratio (OR) puede ir de 0 a infinito. Un OR de 1 implica que no hay diferencias.
 
 Veamoslo como fracción:
 
@@ -269,9 +270,9 @@ sexF=coef(rlog1)["sexfemale"]
 exp(sexF)
 ```
 
-Ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Además, con la regresión logística podemos tener predictores numéricos, lo que escapa de la utilidad de las tablas de contingencia, así el modelo II:
+Ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Además, con la regresión logística podemos tener predictores numéricos, lo que escapa de la utilidad de las tablas de contingencia, así podemos en el modelo II añadir una numérica a los predictores:
 
-> El ofrecerse como voluntario está relaciondo con el sexo de la persona, y su nivel de neuroticismo.
+> El ofrecerse como voluntario está relacionado con el sexo de la persona, y su nivel de neuroticismo.
 
 La Tabla \@ref(tab:rlog2) muestra los resultados para el modelo I y el II, ya con los coeficientes exponenciados:
 
@@ -294,9 +295,9 @@ modelsummary(modelsrl,
 
 ```
 
-Probemos el tercer modelo:
+Probemos ahora el  modelo III, el que completa la hipótesis de los investigadores:
 
-> El ofrecerse como voluntario está relaciondo con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
+> El ofrecerse como voluntario está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
 
 ```{r rlog3, echo=TRUE}
 h3=formula(volunteer~sex + neuroticism + extraversion)
@@ -322,9 +323,9 @@ Del modelo III tenemos que los coeficientes son mayores que *uno* [^1]. Todos el
 
 [^1]: Al igual que en la Poisson, no queremos que el intervalo de confianza incluya el *uno*.
 
-El coeficiente de la variable sexo con hombre como referencia es `r round(exp(coef(rlog3)["sexfemale"]),4)`, ese número es el efecto multiplicativo del odds de ser voluntario cuando se es mujer, o dicho de otra manera el odds de ser voluntario cuando se es mujer aumenta en `r 100*round(exp(coef(rlog3)["sexfemale"]),4)`% en comparación con el hombre.
+El coeficiente de la variable sexo con hombre como referencia es `r round(exp(coef(rlog3)["sexfemale"]),4)`, ese número es el efecto multiplicativo del odds de ser voluntario cuando se es mujer, o dicho de otra manera el odds de ser voluntario se multiplica por  `r 100*round(abs(1-exp(coef(rlog3)["sexfemale"])),4)`% cuando se es mujer (y no hombre).
 
-De manera similar, el coeficiente de la variable extraversión es `r round(exp(coef(rlog3)["extraversion"]),4)`, ese número es el efecto multiplicativo del odds de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds de ser voluntario aumenta en `r 100*round(exp(coef(rlog3)["extraversion"]),4)`% cada vez que la escala de extroversión aumenta en uno.
+De manera similar, el coeficiente de la variable extraversión es `r round(exp(coef(rlog3)["extraversion"]),4)`, ese número es el efecto multiplicativo del odds de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds de ser voluntario odds de ser voluntario se multiplica por `r 100*round(abs(1-exp(coef(rlog3)["extraversion"])),4)`% cada vez que la escala de extroversión aumenta en uno.
 
 ## Comparación de modelos
 
@@ -364,40 +365,40 @@ dotwhisker::dwplot(list(Logit_I=rlog1,Logit_II=rlog2,Logit_III=rlog3),exp=T) + s
        )
 ```
 
-Calculemos las probabilidades predecidas de voluntariado:
+Cuando usamos una regresión logística queremos poder predecir probabilidades, en esta caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene para ser voluntario. Ese  valor es el **fitted* del modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades, y cone ella creemos la Matriz  de Confusión de la Tabla \@ref(tab:confusionMx).
 
-```{r, echo=TRUE, message=FALSE}
+
+```{r confusionMx, echo=TRUE, message=FALSE}
 vol$sexNum=NULL
 predicted <- predict(rlog3, vol,type = "response")
 
-```
-
-Veamos la matriz de confusión en la Tabla \@ref(tab:confusionMx)
-
-```{r confusionMx, echo=TRUE, message=FALSE}
 library(InformationValue)
 confusionMatrix(vol$volunteer, predicted)%>%
     kable(caption = "Matriz de Confusión")%>%
      kableExtra::kable_styling(full_width = F)
 ```
 
-La antidiagonal debería ser 0s si fuera una predicción perfecta. Si un modelo es mejor, debe reducir sustantivamente ese error.
+La antidiagonal debería tener sólo 0s si tuviésemos una predicción perfecta. Si un modelo es mejor, debe reducir sustantivamente ese error. De la Matriz de Confusión podemos calcular algunos indicadores clave:
 
-Dos medidas importantes es saber qué tanto acertamos predecir el evento:
-
-```{r}
-sensitivity(actuals = as.numeric(vol$volunteer),predictedScores = predicted)
-```
-
-Y qué tanto acertamos predecir la no ocurrencia del evento:
+* La **Sensitividad**: Predecir bien el caso verdadero (aquí predecir bien al 'ser voluntario').
 
 ```{r}
-specificity(actuals = as.numeric(vol$volunteer),predictedScores = predicted)
+sensitivity(actuals = as.numeric(vol$volunteer),
+            predictedScores = predicted)
 ```
+
+* La **Especificidad** : Predecir bien el caso falso (aquí predecir bien al 'no ser voluntario')
+
+```{r}
+specificity(actuals = as.numeric(vol$volunteer),
+            predictedScores = predicted)
+```
+
+Si ambos valores son aceptables, podemos usar el modelo para predecir.
 
 ## Prediciendo valores concretos
 
-Predecir probabilidad de voluntariado de una mujer con nivel de neuroticismo=13 y extraversion=8:
+- Ejemplo 1: Predecir probabilidad de voluntariado de una mujer con nivel de neuroticismo=13 y extraversion=8:
 
 ```{r, echo=TRUE}
 ToInput1 <- data.frame(sex=factor(c("female")), 
@@ -405,7 +406,7 @@ ToInput1 <- data.frame(sex=factor(c("female")),
 predict(object = rlog3, newdata = ToInput1, type = "response")
 ```
 
-Predecir probabilidad de voluntariado de una mujer y hombre con los mismos niveles anteriores de neuroticismo y extraversion.
+- Ejemplo 2: Predecir probabilidad de voluntariado de una mujer y hombre con los mismos niveles anteriores de neuroticismo y extraversion.
 
 ```{r, echo=TRUE}
 ToInput2 <- data.frame(sex=factor(c("female","male")), 
@@ -413,7 +414,7 @@ ToInput2 <- data.frame(sex=factor(c("female","male")),
 predict(object = rlog3, newdata = ToInput2, type = "response")
 ```
 
-Predecir probabilidad de voluntariado de dos mujeres, con nivel de neuroticismo de 13 y 10, y extraversion de 8 y 21, respectivamente:
+- Ejemplo 3: Predecir probabilidad de voluntariado de dos mujeres, con nivel de neuroticismo de 13 y 10, y extraversion de 8 y 21, respectivamente:
 
 ```{r, echo=TRUE}
 ToInput3 <- data.frame(sex=factor(c("female","male")), 
@@ -429,29 +430,23 @@ Recuerdese que tenemos en **predicted** las probabilidades de cada caso:
 head(predicted)
 ```
 
-Pero NO sabemos cuando afecta cada variable la probabilidad de ser voluntario en promedio. Para ello pedimos efectos marginales.
+Pero NO sabemos cuando afecta cada variable la probabilidad de ser voluntario en promedio. Para ello pedimos efectos marginales, los que podemos ver en la Tabla \@ref(tab:marginals-table)
 
-```{r  model1_interpre_margins, message=FALSE}
+```{r  marginals-table, message=FALSE}
 # interpracion usando marginal effects:
 library(margins)
 # 
-(model = margins(rlog3))
+
+marginalsData=summary(margins(rlog3)) 
+marginalsData%>% kable(caption = "Efectos Marginales - Modelo III") %>%kableExtra::kable_styling(full_width = F)
 
 ```
 
-Esto sí indica cuanto afecta cada variable la probabilidad promedio de ser voluntario.
+La Figura \@ref(fig:marginals-plot) podemos ver graficado la Tabla \@ref(tab:marginals-table).
 
-Para graficar veamos un resumen:
-
-```{r}
-(margins=summary(model))
-```
-
-Luego, en la Figura \@ref(fig:marginal) podemos ver esos efectos.
-
-```{r marginal, fig.cap="Efectos Marginales"}
+```{r marginals-plot, fig.cap="Efectos Marginales"}
 library(ggplot2)
-base= ggplot(margins,aes(x=factor, y=AME)) + geom_point()
+base= ggplot(marginalsData,aes(x=factor, y=AME)) + geom_point()
 base +  geom_errorbar(aes(ymin=lower, ymax=upper))
 ```
 
