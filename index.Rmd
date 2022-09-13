@@ -50,7 +50,6 @@ Modelo Lineal Generalizados (II)
 -->
 ```
 
-
 ------------------------------------------------------------------------
 
 # Modelando Variables Categóricas
@@ -75,10 +74,10 @@ vol%>%
 
 Según la información proporcionada en el repositorio, esta es la metadata:
 
--   **neuroticism**: scale from Eysenck personality inventory.
--   **extraversion**: scale from Eysenck personality inventory
--   **sex**: a factor with levels: female; male.
--   **volunteer**: volunteering, a factor with levels: no; yes
+-   **neuroticism**: Una medida de inestabilidad emocional, los valores están en la escale de Eysenck.
+-   **extraversion**: Una medida del interes por el mundo exterior de la gente y de las cosas, los valores están en la escale de Eysenck.
+-   **sex**: una categoría con las modalidades: *female* y *male*.
+-   **volunteer**: Un factor dicotómico que representa ser o no (*yes* o *no*) voluntario.
 
 Esta investigación hipotetiza que:
 
@@ -295,7 +294,7 @@ modelsummary(modelsrl,
 
 ```
 
-Probemos ahora el  modelo III, el que completa la hipótesis de los investigadores:
+Probemos ahora el modelo III, el que completa la hipótesis de los investigadores:
 
 > El ofrecerse como voluntario está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
 
@@ -323,7 +322,7 @@ Del modelo III tenemos que los coeficientes son mayores que *uno* [^1]. Todos el
 
 [^1]: Al igual que en la Poisson, no queremos que el intervalo de confianza incluya el *uno*.
 
-El coeficiente de la variable sexo con hombre como referencia es `r round(exp(coef(rlog3)["sexfemale"]),4)`, ese número es el efecto multiplicativo del odds de ser voluntario cuando se es mujer, o dicho de otra manera el odds de ser voluntario se multiplica por  `r 100*round(abs(1-exp(coef(rlog3)["sexfemale"])),4)`% cuando se es mujer (y no hombre).
+El coeficiente de la variable sexo con hombre como referencia es `r round(exp(coef(rlog3)["sexfemale"]),4)`, ese número es el efecto multiplicativo del odds de ser voluntario cuando se es mujer, o dicho de otra manera el odds de ser voluntario se multiplica por `r 100*round(abs(1-exp(coef(rlog3)["sexfemale"])),4)`% cuando se es mujer (y no hombre).
 
 De manera similar, el coeficiente de la variable extraversión es `r round(exp(coef(rlog3)["extraversion"]),4)`, ese número es el efecto multiplicativo del odds de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds de ser voluntario odds de ser voluntario se multiplica por `r 100*round(abs(1-exp(coef(rlog3)["extraversion"])),4)`% cada vez que la escala de extroversión aumenta en uno.
 
@@ -365,8 +364,7 @@ dotwhisker::dwplot(list(Logit_I=rlog1,Logit_II=rlog2,Logit_III=rlog3),exp=T) + s
        )
 ```
 
-Cuando usamos una regresión logística queremos poder predecir probabilidades, en esta caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene para ser voluntario. Ese  valor es el **fitted* del modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades, y cone ella creemos la Matriz  de Confusión de la Tabla \@ref(tab:confusionMx).
-
+Cuando usamos una regresión logística queremos poder predecir probabilidades, en esta caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene para ser voluntario. Ese valor es el \*\*fitted\* del modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades, y cone ella creemos la Matriz de Confusión de la Tabla \@ref(tab:confusionMx).
 
 ```{r confusionMx, echo=TRUE, message=FALSE}
 vol$sexNum=NULL
@@ -380,14 +378,14 @@ confusionMatrix(vol$volunteer, predicted)%>%
 
 La antidiagonal debería tener sólo 0s si tuviésemos una predicción perfecta. Si un modelo es mejor, debe reducir sustantivamente ese error. De la Matriz de Confusión podemos calcular algunos indicadores clave:
 
-* La **Sensitividad**: Predecir bien el caso verdadero (aquí predecir bien al 'ser voluntario').
+-   La **Sensitividad**: Predecir bien el caso verdadero (aquí predecir bien al 'ser voluntario').
 
 ```{r}
 sensitivity(actuals = as.numeric(vol$volunteer),
             predictedScores = predicted)
 ```
 
-* La **Especificidad** : Predecir bien el caso falso (aquí predecir bien al 'no ser voluntario')
+-   La **Especificidad** : Predecir bien el caso falso (aquí predecir bien al 'no ser voluntario')
 
 ```{r}
 specificity(actuals = as.numeric(vol$volunteer),
@@ -398,7 +396,7 @@ Si ambos valores son aceptables, podemos usar el modelo para predecir.
 
 ## Prediciendo valores concretos
 
-- Ejemplo 1: Predecir probabilidad de voluntariado de una mujer con nivel de neuroticismo=13 y extraversion=8:
+-   Ejemplo 1: Predecir probabilidad de voluntariado de una mujer con nivel de neuroticismo=13 y extraversion=8:
 
 ```{r, echo=TRUE}
 ToInput1 <- data.frame(sex=factor(c("female")), 
@@ -406,7 +404,7 @@ ToInput1 <- data.frame(sex=factor(c("female")),
 predict(object = rlog3, newdata = ToInput1, type = "response")
 ```
 
-- Ejemplo 2: Predecir probabilidad de voluntariado de una mujer y hombre con los mismos niveles anteriores de neuroticismo y extraversion.
+-   Ejemplo 2: Predecir probabilidad de voluntariado de una mujer y hombre con los mismos niveles anteriores de neuroticismo y extraversion.
 
 ```{r, echo=TRUE}
 ToInput2 <- data.frame(sex=factor(c("female","male")), 
@@ -414,7 +412,7 @@ ToInput2 <- data.frame(sex=factor(c("female","male")),
 predict(object = rlog3, newdata = ToInput2, type = "response")
 ```
 
-- Ejemplo 3: Predecir probabilidad de voluntariado de dos mujeres, con nivel de neuroticismo de 13 y 10, y extraversion de 8 y 21, respectivamente:
+-   Ejemplo 3: Predecir probabilidad de voluntariado de dos mujeres, con nivel de neuroticismo de 13 y 10, y extraversion de 8 y 21, respectivamente:
 
 ```{r, echo=TRUE}
 ToInput3 <- data.frame(sex=factor(c("female","male")), 
