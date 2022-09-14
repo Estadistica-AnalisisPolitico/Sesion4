@@ -439,7 +439,7 @@ Recuerdese que tenemos en **predicted** las probabilidades de cada caso:
 head(predicted)
 ```
 
-Pero NO sabemos cuando afecta cada variable la probabilidad de ser voluntario en promedio. Para ello pedimos efectos marginales, los que podemos ver en la Tabla \@ref(tab:marginals-table)
+Pero NO sabemos cuando afecta cada variable la probabilidad de ser voluntario en promedio. Para ello pedimos efectos marginales [@ford_beginners_2022], los que podemos ver en la Tabla \@ref(tab:marginals-table)
 
 ```{r  marginals-table, message=FALSE}
 # interpracion usando marginal effects:
@@ -447,12 +447,13 @@ library(margins)
 # 
 
 marginalsData=summary(margins(rlog3)) 
-marginalsData%>% kable(caption = "Efectos Marginales - Modelo III") %>%kableExtra::kable_styling(full_width = F)
+marginalsData%>% kable(caption = "Efectos Marginales Promedio (AME)- Modelo III") %>%kableExtra::kable_styling(full_width = T)
 
 ```
-La Tabla \@ref(tab:marginals-table) nos indica, por ejemplo, que en promedio, el incremento de un punto en la variable _extraversion_ aumenta en `r round(marginalsData$AME[['extraversion']],6)` la probabilidad de ser voluntario. Los valores de la Tabla \@ref(tab:marginals-table) podemos verlos gráficamente en la Figura \@ref(fig:marginals-plot).
 
-```{r marginals-plot, fig.cap="Efectos Marginales"}
+La Tabla \@ref(tab:marginals-table) nos indica, por ejemplo, que en promedio, el incremento de un punto en la variable *extraversion* aumenta en `r round(marginalsData$AME[['extraversion']],6)` ^[También podría usar los valores del intervalo de confianza de los AME en tu interpretación.] la probabilidad de ser voluntario. Los valores de la Tabla \@ref(tab:marginals-table) podemos verlos gráficamente en la Figura \@ref(fig:marginals-plot).
+
+```{r marginals-plot, fig.cap="Efectos Marginales Promedio (AME)"}
 library(ggplot2)
 base= ggplot(marginalsData,aes(x=factor, y=AME)) + geom_point()
 base +  geom_errorbar(aes(ymin=lower, ymax=upper))
