@@ -426,7 +426,7 @@ predict(object = rlog3, newdata = ToInput2, type = "response")
 -   Ejemplo 3: Predecir probabilidad de voluntariado de dos mujeres, con nivel de neuroticismo de 13 y 10, y extraversion de 8 y 21, respectivamente:
 
 ```{r, echo=TRUE}
-ToInput3 <- data.frame(sex=factor(c("female","male")), 
+ToInput3 <- data.frame(sex=factor(c("female","female")), 
                       neuroticism=c(13,10), extraversion=c(8,21))
 predict(object = rlog3, newdata = ToInput3, type = "response")
 ```
