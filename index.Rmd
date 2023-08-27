@@ -35,7 +35,7 @@ Profesor: <a href="http://www.pucp.edu.pe/profesor/jose-manuel-magallanes/" targ
 
 <h2>
 
-Modelo Lineal Generalizados (II)
+Modelando Variables Categóricas
 
 </h2>
 
@@ -52,7 +52,6 @@ Modelo Lineal Generalizados (II)
 
 ------------------------------------------------------------------------
 
-# Modelando Variables Categóricas
 
 Michael Cowles y Carlone Davis prepararon una data para investigar quien es más proclive a ser voluntario en experimentos sociales [@cowles_subject_1987]. La data y la metadata están disponibles en [@arel-bundock_rdatasets_2022]. Veamos los contenidos:
 
@@ -77,11 +76,11 @@ Según la información proporcionada en el repositorio, esta es la metadata:
 -   **neuroticism**: Una medida de inestabilidad emocional, los valores están en la escale de Eysenck [@eysenck_manual_1975].
 -   **extraversion**: Una medida del interes por el mundo exterior de la gente y de las cosas, los valores están en la escale de Eysenck [@eysenck_manual_1975].
 -   **sex**: una categoría con las modalidades: *female* y *male*.
--   **volunteer**: Un factor dicotómico que representa ser o no (*yes* o *no*) voluntario.
+-   **volunteer**: Un factor dicotómico que representa ser o no (*yes* o *no*) voluntario en experimentos sociales.
 
 Esta investigación hipotetiza que:
 
-> El ofrecerse como voluntario está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
+> El ofrecerse como voluntario a experimentos sociales está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
 
 Hasta ahora hemos querido modelar variables de medición y conteos, pero como vemos, en la data la variable dependiente es *volunteer* (ofrecerse como voluntario), la cuál es dicotómica. Esto no puede ser tratado con las técnicas anteriores [@magallanes_estadistica-analisispoliticosesion2_2022-1; @magallanes_estadistica-analisispoliticosesion3_2022].
 
@@ -91,6 +90,7 @@ Veamos un resumen univariado en la Tabla \@ref(tab:univarExploTabla).
 library(summarytools)
 library(kableExtra)
 
+# usemos la función "dfSummary" de paquete "summarytools"
 dfSummary(vol,
           plain.ascii  = FALSE,
           varnumbers = FALSE,
@@ -195,7 +195,7 @@ Hasta aquí ya sabemos cuál odds ha salido mayor. Eso es información clara. Pa
 (OR_MujHom=OddsMujVol/OddsHomVol)
 ```
 
-Con ese valor, ya sabemos que el odds de ser mujer supera al odds del hombre por un factor de `r round(abs(1-OR_MujHom),5)`. El odds ratio (OR) puede ir de 0 a infinito. Un OR de 1 implica que no hay diferencias.
+Con ese valor, ya sabemos que el odds de ser mujer supera al odds del hombre por un factor de `r round(abs(1-OR_MujHom),2)`. El odds ratio (OR) puede ir de 0 a infinito. Un OR de 1 implica que no hay diferencias.
 
 Veámoslo como fracción:
 
@@ -213,7 +213,7 @@ mosaicplot( t(volsexTable),col = c("orange", "green"),main = "")
 
 La diferencia es clara, pero ¿será ésta estadísticamente significativa?
 
-# Regresión Logística
+# Regresión Logística Binaria
 
 La regresión logística modela el comportamiento de la probabilidad del evento de interés, según vemos en la Ecuación \@ref(eq:logbin).
 
@@ -238,9 +238,6 @@ modelrl=list('Ser Voluntario (I)'=rlog1)
 #f <- function(x) format(x, digits = 4, scientific = FALSE)
 library(modelsummary)
 modelsummary(modelrl,
-             #fmt=f,
-             #exponentiate = T, 
-             #statistic = 'conf.int',
              title = "Regresión Logística",
              stars = TRUE,
              output = "kableExtra")
@@ -249,13 +246,13 @@ modelsummary(modelrl,
 
 Los coeficientes, como se vió en la ecuación anterior, están modelando al logaritmo del odds de ser voluntario.
 
-El resultado anterior ha usado a *mujer* como *referencia*: nos informa cuánto afecta al log odds de ser voluntario el ser hombre en comparación con ser mujer (la referencia). La Tabla \@ref(tab:rlog1) nos confirma que ser hombre disminuye el logaritmo del odds (y claro que la probabilidad) de ser voluntario. Veamos mejor la Tabla \@ref(tab:rlog1a) con la misma regresión pero con la categoría *hombre* como referencia.
+El resultado anterior ha usado a **mujer como referencia**: nos informa cuánto afecta ser hombre al logaritmo del odds de ser voluntario, en comparación con ser mujer (la referencia). La Tabla \@ref(tab:rlog1) nos confirma que ser hombre disminuye (aquí el signo ayuda) el logaritmo del odds (y por ende la probabilidad) de ser voluntario. Veamos alternativamente la Tabla \@ref(tab:rlog1a) con la misma regresión pero con la categoría *hombre* como referencia.
 
 ```{r rlog1a, echo=TRUE}
-# change reference
+# cambio de referencia
 vol$sex=relevel(vol$sex,ref = "male")
 
-#regression
+#regresion
 rlog1=glm(h1, data=vol,family = binomial)
 modelrl=list('Ser Voluntario (I)'=rlog1)
 modelsummary(modelrl,
@@ -264,14 +261,18 @@ modelsummary(modelrl,
              output = "kableExtra")
 ```
 
-La Tabla \@ref(tab:rlog1a), nos muestra el efecto positivo de ser mujer en ser voluntario. Ese valor, como modela a un logaritmo del odds, no es fácil de interpretar. Pero, si le aplicas exponencial al coeficiente `r round(coef(rlog1)["sexfemale"],3)`, hallaremos un valor conocido:
+La Tabla \@ref(tab:rlog1a), nos muestra el efecto (al 0.05) positivo (nuevamente el signo ayuda) de ser mujer en ser voluntario . 
 
-```{r, echo=TRUE}
+Los coeficientes de las Tablas \@ref(tab:rlog1)  y Tabla \@ref(tab:rlog1a), como muestran al logaritmo del odds, no son fáciles de interpretar. Pero, si le aplicas exponencial obtendrás un o dds ratio: veamos el caso del coeficiente`r round(coef(rlog1)["sexfemale"],3)` de la Tabla \@ref(tab:rlog1a):
+
+```{r expCoefFem, echo=TRUE}
 sexF=coef(rlog1)["sexfemale"]
 exp(sexF)
 ```
 
-Ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Además, con la regresión logística podemos tener predictores numéricos, lo que escapa de la utilidad de las tablas de contingencia, así podemos en el modelo II añadir una numérica a los predictores:
+Este valor ya lo conociamos, pero ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. 
+
+Algo importante ahora es que con la regresión logística ya podemos tener predictores numéricos, lo que escapa de la utilidad de las tablas de contingencia. Así, podemos en el modelo II añadir una numérica a los predictores:
 
 > El ofrecerse como voluntario está relacionado con el sexo de la persona, y su nivel de neuroticismo.
 
@@ -285,11 +286,12 @@ rlog2=glm(h2, data=vol,family = binomial)
 modelsrl=list('Ser Voluntario (I)'=rlog1,
              'Ser Voluntario (II)'=rlog2)
 
-f <- function(x) format(x, digits = 4, scientific = FALSE)
+# formato creado para modelsummary
+formatoNumero = function(x) format(x, digits = 4, scientific = FALSE)
 modelsummary(modelsrl,
-             fmt=f,
-             exponentiate = T, 
-             statistic = 'conf.int',
+             fmt=formatoNumero, # usa función que creé antes
+             exponentiate = T, # coeficientes sin logaritmo
+             statistic = 'conf.int', # mostrar ICs
              title = "Regresión Logísticas (Coeficientes Exponenciados)",
              stars = TRUE,
              output = "kableExtra")
@@ -300,9 +302,18 @@ Probemos ahora el modelo III, el que completa la hipótesis de los investigadore
 
 > El ofrecerse como voluntario está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
 
-```{r rlog3, echo=TRUE}
+Veamos lo en simple:
+
+```{r rlog3}
 h3=formula(volunteer~sex + neuroticism + extraversion)
 rlog3=glm(h3, data=vol,family = binomial)
+
+summary(rlog3)
+```
+
+Ahora, a todos los modelos juntos \@ref(tab:rlogALL):
+
+```{r rlogALL, echo=TRUE}
 
 modelsrl=list('Ser Voluntario (I)'=rlog1,
              'Ser Voluntario (II)'=rlog2,
@@ -310,17 +321,19 @@ modelsrl=list('Ser Voluntario (I)'=rlog1,
 
 f <- function(x) format(x, digits = 4, scientific = FALSE)
 modelsummary(modelsrl,
-             fmt=f,
+             fmt=formatoNumero,
              exponentiate = T, 
              statistic = 'conf.int',
-             title = "Regresión Logísticas (Coeficientes Exponenciados)",
+             title = "Comparando Regresión Logísticas (Coeficientes Exponenciados)",
              stars = TRUE,
+             gof_map = c("nobs","aic","bic","rmse","logLik"), #comparar
+             gof_omit = c("F"),
              output = "kableExtra")
 ```
 
 ## Interpretación
 
-Del modelo III tenemos que los coeficientes son mayores que *uno* [^1]. Todos ellos podrían tener un efecto positivo. Pero el intervalo de confianza de la segunda variable incluye al 1, por lo que la probabilidad que sea 1 es mayor al 10% (lo que nos motiva a aceptar que no tendría efecto).
+Del modelo III tenemos que los coeficientes son mayores que *uno* [^1]. Todos ellos podrían tener un efecto positivo. Pero el intervalo de confianza de la *neuroticism* incluye al 1 (además que la probabilidad que sea 1 es mayor al 10%, lo que contribuye a aceptar que no tendría efecto), por lo que lo consideramos no significativo.
 
 [^1]: Al igual que en la Poisson, no queremos que el intervalo de confianza incluya el *uno*.
 
@@ -331,8 +344,8 @@ De manera similar, el coeficiente de la variable extraversión es `r round(exp(c
 Podemos calcular los coeficientes estandarizados [@ibm_spss_computing_2020] para saber cuál de los predictores del modelo III tiene mayor efecto (ver Tabla \@ref(tab:stdCoefs)).
 
 ```{r stdCoefs}
-vol$sexNum=as.numeric(vol$sex) # it is a factor.
-sdVIs=apply(vol[,c("sexNum","neuroticism", "extraversion")],2,sd)
+vol$sex_AsNum=as.numeric(vol$sex) # it is a factor.
+sdVIs=apply(vol[,c("sex_AsNum","neuroticism", "extraversion")],2,sd)
 DF=list(LogitSt=sdVIs*coef(rlog3)[c(2,3,4)])%>%
        data.frame()
 
@@ -341,11 +354,15 @@ DF%>% kable(caption = "Coeficientes Standarizados (ordenar vía valores absoluto
 
 ```
 
-Usandi valores absolutos notamos cuál es el orden de importancia. Pero no usemos esos valores para interpretar el efecto.
+Usando valores absolutos notamos cuál es el orden de importancia. Pero no usemos esos valores para interpretar el efecto.
 
-## Comparación de modelos
+## Decidiendo mejor modelo
 
-Las tres regresiones presentan valores diferentes del criterio de información de Akaike (AIC), se considera que un modelo es mejor si tiene un AIC menor a los demás. Esto sugiere que el tercer modelo es el mejor y el segundo el peor. Como los valores del AIC están muy cercanos confirmemos usando el test de razón de verosimilitud (likelihood ratio test -LRT); el resultado lo vemos en la Tabla \@ref(tab:LRTall).
+R entrega algunos índices muy para comparar los modelos logísticos, el BIC, AIC, RMSE[^2], y Log.Lik. Los primeros tres indican que el modelo es mejor si tienen valores bajos; mientras que el último será mejor si su valor aumenta. 
+
+[^2]: Nota que RMSE se mantiene constante (al menos con las cifras mostradas).
+
+Sin embargo, las diferencias pueden ser mínimas entre estos índices, por lo que es apropiado usar el test de razón de verosimilitud (likelihood ratio test -LRT), cuyo resultado lo vemos en la Tabla \@ref(tab:LRTall).
 
 ```{r LRTall, message=FALSE}
 
@@ -355,53 +372,92 @@ lrtest(rlog1,rlog2, rlog3) %>%
 kable(caption = "Tabla LRT para comparar modelos")%>%kableExtra::kable_styling(full_width = FALSE)
 ```
 
-Como vemos en la Tabla \@ref(tab:LRTall), pasar del modelo 1 al modelo 2 es no significativo (probabilidad es mayor a 0.05), por lo que no se rechaza la hipotesis nula de igualdad de modelos. Pero sí es significativo pasar del modelo 2 al modelo 3.
+Como vemos en la Tabla \@ref(tab:LRTall), pasar del modelo 1 al modelo 2 es no significativo (probabilidad de similitud es más de 90%), por lo que no se rechaza la hipotesis nula de igualdad de modelos. Pero sí es significativo pasar del modelo 2 al modelo 3.
 
-Podemos comparar los modelos I, II, y III de manera gráfica el la Figura \@ref(fig:finplots).
+Podemos comparar los modelos I, II, y III de manera gráfica en la Figura \@ref(fig:finplots).
 
 ```{r finplots, fig.cap="Comparación visual de modelos", message=FALSE, warning=FALSE}
 library(ggplot2)
-dotwhisker::dwplot(list(Logit_I=rlog1,Logit_II=rlog2,Logit_III=rlog3),exp=T) + scale_y_discrete(labels=c("extraversion","neuroticism","sex (ref: male)")) + scale_color_discrete(name="Modelos para:\nSer Voluntario") + geom_vline(
-           xintercept = 1,
-           colour = "grey60",
-           linetype = 2
-       )
+dotwhisker::dwplot(list(Logit_I=rlog1,Logit_II=rlog2,Logit_III=rlog3),
+                   exp=T) + #exponenciados!
+            scale_y_discrete(labels=c("extraversion",
+                                      "neuroticism",
+                                      "sex (ref: male)")) +
+            scale_color_discrete(name="Modelos para:\nSer Voluntario") +
+            geom_vline(xintercept = 1,
+                       colour = "grey60",
+                       linetype = 2)
 ```
 
 En la Figura \@ref(fig:finplots) se nota claramente por qué el neuroticismo no es significativo.
 
 ## Evaluando modelo seleccionado
 
-Cuando usamos una regresión logística queremos predecir probabilidades, en esta caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene para ser voluntario. Esos son los valor **ajustados** (*fitted*) que te entrega el modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades, y con ellas creamos la Matriz de Confusión [@suresh_what_2021] de la Tabla \@ref(tab:confusionMx).
+Cuando usamos una regresión logística queremos predecir probabilidades, en esta caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene para ser voluntario. Esos son los valor **ajustados** (*fitted*) que te entrega el modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades, y con ellas creamos una  Matriz de Confusión básica [@suresh_what_2021] que vemos la Tabla \@ref(tab:confusionMx1).
 
 ```{r confusionMx, echo=TRUE, message=FALSE}
 vol$sexNum=NULL
-predicted <- predict(rlog3, vol,type = "response")
+predictedProbs <- predict(rlog3, vol,type = "response")
+vol$predicted=ifelse(predictedProbs>0.5,"yes","no")
 
-library(InformationValue)
-confusionMatrix(actuals = vol$volunteer,
-                predictedScores =  predicted)%>%
-    kable(caption = "Matriz de Confusión")%>%
+confusionMatrix=table(predicted =  vol$predicted,
+      volunteer = vol$volunteer)
+#  a html
+confusionMatrix%>%
+    kable(caption = "Matriz de Confusión (simple)")%>%
      kableExtra::kable_styling(full_width = F)
 ```
 
-La antidiagonal debería tener sólo 0s si tuviésemos una predicción perfecta. Si un modelo es mejor, debe reducir sustantivamente ese error. De la Matriz de Confusión podemos calcular algunos indicadores clave [@trevethan_sensitivity_2017]:
+Podemos verlo de manera gráfica usando el paquete **cvms** [^3] en la Figura \@ref(fig:plotConfusionMatrix).
 
--   La **Sensitividad**: Utilidad para determinar el "voluntario" (modelo predice a un voluntario que realmente era voluntario en la data original').
+```{r plotConfusionMatrix, fig.cap="Matriz de confusión", message=FALSE, warning=FALSE}
 
-```{r}
-sensitivity(actuals = as.numeric(vol$volunteer),
-            predictedScores = predicted)
+library(cvms)
+plot_confusion_matrix(as.data.frame(confusionMatrix), 
+                      target_col = "volunteer", 
+                      prediction_col = "predicted",
+                      counts_col = "Freq")
+```
+ [^3]: Para evitar mensajes de advertencia, instale además 'ggimage'  y 'rsvg', luego de intala 'cvms'.
+
+
+
+La diagonal secundaria o antidiagonal debería tener sólo 0s si tuviésemos una predicción perfecta, y los demás valores estar en la diagonal principal. El modelo modelo, debe reducir sustantivamente ese error. 
+
+Note que en la matriz de confusión se puede calcular valores clave [@trevethan_sensitivity_2017]:
+
+* Verdaderos Positivos (VP)
+
+* Verdaderos Negativos (VN)
+
+* Falsos Positivo (FP)
+
+* Falsos Negativos (FP)
+
+Y a partir de ello:
+
+* La **Sensitividad**: Utilidad del modelo para determinar el "voluntario" (modelo predice a un voluntario que realmente era voluntario en la data original').
+
+*   La **Especificidad** : Utilidad del modelo para determinar el "no voluntario" (modelo predice a un no voluntario que realmente no era voluntario en la data original').
+
+Para ver todos estos valores debemos transformar los datos:
+```{r transformDataCaret}
+vol$predicted_01=as.factor(ifelse(vol$predicted=='yes',1,0))
+vol$volunteer_01=as.factor(ifelse(vol$volunteer=='yes',1,0))
 ```
 
--   La **Especificidad** : Utilidad para determinar el "no voluntario" (modelo predice a un no voluntario que realmente no era voluntario en la data original').
+Y de aqui usar el paquete **caret**:
 
-```{r}
-specificity(actuals = as.numeric(vol$volunteer),
-            predictedScores = predicted)
+```{r confusionCaret}
+library(caret)
+cf <- confusionMatrix(data=vol$predicted_01,
+                     reference=vol$volunteer_01,
+                     positive="1") # clave!!
+cf
 ```
 
-Si ambos valores son aceptables, podemos usar el modelo para predecir.
+
+
 
 ## Prediciendo valores concretos
 
@@ -409,7 +465,7 @@ Si nos quedamos con el modelo III, podemos utilizarlo para predicciones. Veamos:
 
 -   Ejemplo 1: Predecir probabilidad de voluntariado de una mujer con nivel de neuroticismo=13 y extraversion=8:
 
-```{r, echo=TRUE}
+```{r predict1, echo=TRUE}
 ToInput1 <- data.frame(sex=factor(c("female")), 
                       neuroticism=13, extraversion=8)
 predict(object = rlog3, newdata = ToInput1, type = "response")
@@ -417,7 +473,7 @@ predict(object = rlog3, newdata = ToInput1, type = "response")
 
 -   Ejemplo 2: Predecir probabilidad de voluntariado de una mujer y hombre con los mismos niveles anteriores de neuroticismo y extraversion.
 
-```{r, echo=TRUE}
+```{r predict2, echo=TRUE}
 ToInput2 <- data.frame(sex=factor(c("female","male")), 
                       neuroticism=13, extraversion=8)
 predict(object = rlog3, newdata = ToInput2, type = "response")
@@ -425,7 +481,7 @@ predict(object = rlog3, newdata = ToInput2, type = "response")
 
 -   Ejemplo 3: Predecir probabilidad de voluntariado de dos mujeres, con nivel de neuroticismo de 13 y 10, y extraversion de 8 y 21, respectivamente:
 
-```{r, echo=TRUE}
+```{r predict3, echo=TRUE}
 ToInput3 <- data.frame(sex=factor(c("female","female")), 
                       neuroticism=c(13,10), extraversion=c(8,21))
 predict(object = rlog3, newdata = ToInput3, type = "response")
@@ -436,7 +492,7 @@ predict(object = rlog3, newdata = ToInput3, type = "response")
 Recuerdese que tenemos en **predicted** las probabilidades de cada caso:
 
 ```{r}
-head(predicted)
+head(vol$predicted)
 ```
 
 Pero NO sabemos cuando afecta cada variable la probabilidad de ser voluntario en promedio. Para ello pedimos efectos marginales [@ford_beginners_2022], los que podemos ver en la Tabla \@ref(tab:marginals-table)
