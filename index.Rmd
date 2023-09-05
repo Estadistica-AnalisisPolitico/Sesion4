@@ -52,6 +52,7 @@ Modelando Variables Categóricas
 
 ------------------------------------------------------------------------
 
+# Presentación
 
 Michael Cowles y Carlone Davis prepararon una data para investigar quien es más proclive a ser voluntario en experimentos sociales [@cowles_subject_1987]. La data y la metadata están disponibles en [@arel-bundock_rdatasets_2022]. Veamos los contenidos:
 
@@ -344,17 +345,19 @@ De manera similar, el coeficiente de la variable extraversión es `r round(exp(c
 Podemos calcular los coeficientes estandarizados [@ibm_spss_computing_2020] para saber cuál de los predictores del modelo III tiene mayor efecto (ver Tabla \@ref(tab:stdCoefs)).
 
 ```{r stdCoefs}
-vol$sex_AsNum=as.numeric(vol$sex) # it is a factor.
-sdVIs=apply(vol[,c("sex_AsNum","neuroticism", "extraversion")],2,sd)
+vol$sexFem_num=ifelse(vol$sex=='male',0,1) # 1 es para mujer
+sdVIs=apply(vol[,c("sexFem_num","neuroticism", "extraversion")],2,sd)
 DF=list(LogitSt=sdVIs*coef(rlog3)[c(2,3,4)])%>%
        data.frame()
 
-DF%>% kable(caption = "Coeficientes Standarizados (ordenar vía valores absolutos)")%>%
+# DF tiene los coeficientes estandarizados
+
+DF%>% kable(caption = "Coeficientes Estandarizados (ordenar vía valores absolutos)")%>%
           kableExtra::kable_styling(full_width = F)
 
 ```
 
-Usando valores absolutos notamos cuál es el orden de importancia. Pero no usemos esos valores para interpretar el efecto.
+Usando valores absolutos notamos cuál es el orden de importancia, en este caso *extraversion* es la que más efecto tiene. Pero no usemos esos valores para interpretar el efecto numérico, sólo saber cuál afecta más que otro.
 
 ## Decidiendo mejor modelo
 
@@ -393,36 +396,41 @@ En la Figura \@ref(fig:finplots) se nota claramente por qué el neuroticismo no 
 
 ## Evaluando modelo seleccionado
 
-Cuando usamos una regresión logística queremos predecir probabilidades, en esta caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene para ser voluntario. Esos son los valor **ajustados** (*fitted*) que te entrega el modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades, y con ellas creamos una  Matriz de Confusión básica [@suresh_what_2021] que vemos la Tabla \@ref(tab:confusionMx1).
+Cuando usamos una regresión logística queremos predecir probabilidades, en este caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene con esta regresión para ser voluntario. Esos son los valor **ajustados** (*fitted*) que te entrega el modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades:
 
-```{r confusionMx, echo=TRUE, message=FALSE}
-vol$sexNum=NULL
+```{r}
 predictedProbs <- predict(rlog3, vol,type = "response")
+# veamos algunos de ellos
+head(predictedProbs)
+```
+Aquí podemos usar estos valores para crear el 0 o 1 predicho:
+```{r}
 vol$predicted=ifelse(predictedProbs>0.5,"yes","no")
-
-confusionMatrix=table(predicted =  vol$predicted,
-      volunteer = vol$volunteer)
-#  a html
-confusionMatrix%>%
-    kable(caption = "Matriz de Confusión (simple)")%>%
-     kableExtra::kable_styling(full_width = F)
 ```
 
-Podemos verlo de manera gráfica usando el paquete **cvms** [^3] en la Figura \@ref(fig:plotConfusionMatrix).
+Veamos algunas filas de estas dos columnas:
+```{r}
+head(vol[,c("predicted","volunteer")],10)
+```
+
+La columns *predicted* busca ser la misma que la columna *volunteer*, pero en algunos casos puede fallar. 
+
+Para saber qué tanto se acertó creamos una  Matriz de Confusión  [@suresh_what_2021] usando el paquete **cvms** [^3] en la Figura \@ref(fig:plotConfusionMatrix).
 
 ```{r plotConfusionMatrix, fig.cap="Matriz de confusión", message=FALSE, warning=FALSE}
 
 library(cvms)
-plot_confusion_matrix(as.data.frame(confusionMatrix), 
-                      target_col = "volunteer", 
-                      prediction_col = "predicted",
-                      counts_col = "Freq")
+ConfMatrix=confusion_matrix(predictions =  vol$predicted,
+                      targets= vol$volunteer)
+library(cvms)
+plot_confusion_matrix(ConfMatrix,
+                      class_order=c("yes","no"))
 ```
  [^3]: Para evitar mensajes de advertencia, instale además 'ggimage'  y 'rsvg', luego de intala 'cvms'.
 
 
 
-La diagonal secundaria o antidiagonal debería tener sólo 0s si tuviésemos una predicción perfecta, y los demás valores estar en la diagonal principal. El modelo modelo, debe reducir sustantivamente ese error. 
+La diagonal secundaria o antidiagonal debería tener sólo 0s si tuviésemos una predicción perfecta, y los demás valores estar en la diagonal principal. El modelo, debería servir para reducir sustantivamente ese error. 
 
 Note que en la matriz de confusión se puede calcular valores clave [@trevethan_sensitivity_2017]:
 
@@ -432,32 +440,27 @@ Note que en la matriz de confusión se puede calcular valores clave [@trevethan_
 
 * Falsos Positivo (FP)
 
-* Falsos Negativos (FP)
+* Falsos Negativos (FN)
 
-Y a partir de ello:
+Y a partir de ellos:
 
-* La **Sensitividad**: Utilidad del modelo para determinar el "voluntario" (modelo predice a un voluntario que realmente era voluntario en la data original').
+* La **Sensitividad** (VP/(VP+FN)): Utilidad del modelo para determinar el "voluntario" (modelo predice a un voluntario que realmente era voluntario en la data original').
 
-*   La **Especificidad** : Utilidad del modelo para determinar el "no voluntario" (modelo predice a un no voluntario que realmente no era voluntario en la data original').
+```{r}
+ConfMatrix$Sensitivity
+```
+*   La **Especificidad** (VN/(VN+FP)): Utilidad del modelo para determinar el "no voluntario" (modelo predice a un no voluntario que realmente no era voluntario en la data original').
 
-Para ver todos estos valores debemos transformar los datos:
-```{r transformDataCaret}
-vol$predicted_01=as.factor(ifelse(vol$predicted=='yes',1,0))
-vol$volunteer_01=as.factor(ifelse(vol$volunteer=='yes',1,0))
+```{r}
+ConfMatrix$Specificity
+```
+Una medida general es el índice de Kappa:
+
+```{r}
+ConfMatrix$Kappa
 ```
 
-Y de aqui usar el paquete **caret**:
-
-```{r confusionCaret}
-library(caret)
-cf <- confusionMatrix(data=vol$predicted_01,
-                     reference=vol$volunteer_01,
-                     positive="1") # clave!!
-cf
-```
-
-
-
+Este índice vale **1** si la predicción es perfecta, y **0** si fallan todas las predicciones. 
 
 ## Prediciendo valores concretos
 
