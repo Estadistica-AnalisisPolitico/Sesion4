@@ -74,8 +74,8 @@ vol%>%
 
 Según la información proporcionada en el repositorio, esta es la metadata:
 
--   **neuroticism**: Una medida de inestabilidad emocional, los valores están en la escale de Eysenck [@eysenck_manual_1975].
--   **extraversion**: Una medida del interes por el mundo exterior de la gente y de las cosas, los valores están en la escale de Eysenck [@eysenck_manual_1975].
+-   **neuroticism**: Una medida de inestabilidad emocional, los valores están en la escala de Eysenck [@eysenck_manual_1975].
+-   **extraversion**: Una medida del interes por el mundo exterior de la gente y de las cosas, los valores están en la escala de Eysenck [@eysenck_manual_1975].
 -   **sex**: una categoría con las modalidades: *female* y *male*.
 -   **volunteer**: Un factor dicotómico que representa ser o no (*yes* o *no*) voluntario en experimentos sociales.
 
@@ -83,7 +83,7 @@ Esta investigación hipotetiza que:
 
 > El ofrecerse como voluntario a experimentos sociales está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
 
-Hasta ahora hemos querido modelar variables de medición y conteos, pero como vemos, en la data la variable dependiente es *volunteer* (ofrecerse como voluntario), la cuál es dicotómica. Esto no puede ser tratado con las técnicas anteriores [@magallanes_estadistica-analisispoliticosesion2_2022-1; @magallanes_estadistica-analisispoliticosesion3_2022].
+Hasta ahora hemos querido modelar hipotesis donde la variable dependiente eran valores continuos, y de conteos pero, como vemos, en esta hipótesis la variable dependiente es *volunteer* (ofrecerse como voluntario), la cuál es categórica (dicotómica). Esto no puede ser tratado con las técnicas anteriores [@magallanes_estadistica-analisispoliticosesion2_2022-1; @magallanes_estadistica-analisispoliticosesion3_2022].
 
 Veamos un resumen univariado en la Tabla \@ref(tab:univarExploTabla).
 
@@ -102,15 +102,11 @@ dfSummary(vol,
     kable_styling(full_width = F)
 ```
 
-Tengamos en cuenta que R siempre almacena las categóricas internamente como números, y éstos se asignarán por defecto en orden alfabético. De ahi que el primer nivel de cada categórica se conoce como la **categoría de referencia**. Hay funciones que requieren usar los factores como números, en ese sentido, asegurate que el orden de las categóricas sea el correcto: que el evento de interés sea el mayor valor (en esta caso voluntario).
+
 
 # Probabilidades y ODDS
 
-Hipotetizemos que:
-
-> Ser mujer está relacionado con ser voluntario en proyectos de investigación.
-
-Al ser ambas categóricas, y ser la hipótesis asimétrica o direccional, preparemos una tabla de contingencia que muestre ello. Veamos la Tabla \@ref(tab:tabconting).
+Hagamos un breve repaso de cómo usar tablas de contigencia para analizar variables categóricas. En este caso, analicemos la relación entre sexo del entrevistado y ser voluntario. Al ser ambas categóricas, y ser la hipótesis asimétrica o direccional, preparemos una tabla de contingencia que muestre ello. Veamos la Tabla \@ref(tab:tabconting).
 
 ```{r tabconting, echo=TRUE}
 dep=vol$volunteer # a la fila
@@ -118,17 +114,22 @@ ind=vol$sex # a la columna
 
 volsexTable=table(dep,ind,dnn = c('volunteer','sex'))
 
-### suma por columna
-addmargins(volsexTable,margin = 1)%>%
+### suma por fila y columna
+addmargins(volsexTable)%>%
     kable(caption = "Tabla de Contingencia: 'Sexo' y 'Ser Voluntario'")%>%
     kableExtra::kable_styling(full_width = F)
 
 ```
+Recuérdese que se acostumbra que la variable independiente se sitúe en columnas, y la variable dependiente en filas. A partir de esta información tratemos de explorar la hipótesis:
+
+> Ser mujer está relacionado con ser voluntario en proyectos de investigación.
+
+
 
 Saber si *ser mujer* está relacionado con *ser voluntario* implica responderse:
 
 -   Si elijo una mujer al azar, ¿qué probabilidad se tiene que ésta sea voluntaria?.
--   ¿Cómo comparo el "voluntarismo" de la mujer con la del hombre?
+-   ¿Cómo comparo el "voluntarismo" de la mujer con el "voluntarismo" del hombre?
 
 Para ello usaremos los conceptos de probabilidad, y en particular de Odds Ratio [@szumilas_explaining_2010]. Y todos los cálculos usarán los valores de la Tabla \@ref(tab:tabconting).
 
@@ -223,6 +224,7 @@ La regresión logística modela el comportamiento de la probabilidad del evento 
 {log}(\frac{{Y}}{{1 – Y}}) ={log}(\frac{{p(X)}}{{1 – p(X)}}) =\alpha  + \beta \cdot X + \epsilon (\#eq:logbin)
 \end{equation}
 ```
+
 La parte izquierda de la Ecuación \@ref(eq:logbin) representa esa probabilidad pero en términos del odds; y la parte derecha es igual a la ecuación de una recta, pero estamos modelando al logaritmo del odds. Veamos la Tabla \@ref(tab:rlog1).
 
 ```{r rlog1,warning=FALSE, message=FALSE, results='asis'}
@@ -245,9 +247,59 @@ modelsummary(modelrl,
 
 ```
 
-Los coeficientes, como se vió en la ecuación anterior, están modelando al logaritmo del odds de ser voluntario.
+En general, se nota que el sexo (ser hombre) tiene efecto negativo y significativo sobre el logaritmo del odds de ser voluntario. Pero antes de ir a la interpretación detallada veamos otras consideraciones.
 
-El resultado anterior ha usado a **mujer como referencia**: nos informa cuánto afecta ser hombre al logaritmo del odds de ser voluntario, en comparación con ser mujer (la referencia). La Tabla \@ref(tab:rlog1) nos confirma que ser hombre disminuye (aquí el signo ayuda) el logaritmo del odds (y por ende la probabilidad) de ser voluntario. Veamos alternativamente la Tabla \@ref(tab:rlog1a) con la misma regresión pero con la categoría *hombre* como referencia.
+## Consideraciones Previas
+
+La regresión  es sencilla de calcular, pero la presencia de variables categóricas puede traer complicaciones. Veamos cómo R está utilizando la variable dependiente:
+```{r}
+# la representación numérica
+as.numeric(as.factor(c("no","yes")))
+```
+Qué pasaría si tuvieramos otras columnas:
+
+```{r}
+vol$IsVolunteer=ifelse(vol$volunteer=="yes",T,F)
+vol$IsVolunteer_1=as.integer(ifelse(vol$volunteer=="yes",1,0))
+vol$IsVolunteer_claro=as.factor(ifelse(vol$volunteer=="yes",
+                             "claro","nunca"))
+
+# nos queda:
+library(magrittr)
+vol[,c("volunteer","IsVolunteer","IsVolunteer_1","IsVolunteer_claro")]%>%
+    rmarkdown::paged_table(options = )
+
+```
+
+Resscribamos la hipótesis inicial con las nuevas variables:
+
+```{r}
+h1b=formula(IsVolunteer~sex)
+h1c=formula(IsVolunteer_1~sex)
+h1d=formula(IsVolunteer_claro~sex)
+```
+
+Veamos:
+
+* Dicotómica como Booleana (lógica)
+
+```{r}
+coef(glm(h1b, data=vol,family = binomial))
+```
+* Dicotómica como Entero:
+
+```{r}
+coef(glm(h1c, data=vol,family = binomial))
+```
+
+* Dicotómica como otras palabras
+
+```{r}
+coef(glm(h1d, data=vol,family = binomial))
+```
+Como se ve, R usa bien los casos Booleanos y de enteros, pero ante la presencia de otros textos en la respuesta sólo usará el orden alfabético.
+
+Otro tema es el uso de categóricas en las variables independientes. El resultado anterior ha usado a **mujer como referencia**: nos informa cuánto afecta *ser hombre al logaritmo del odds de ser voluntario*, en comparación con ser mujer (la referencia). La Tabla \@ref(tab:rlog1) nos confirma que ser hombre disminuye (aquí el signo ayuda) el logaritmo del odds (y por ende la probabilidad) de ser voluntario. Veamos alternativamente la Tabla \@ref(tab:rlog1a) con la misma regresión pero con la categoría *hombre* como referencia.
 
 ```{r rlog1a, echo=TRUE}
 # cambio de referencia
@@ -262,16 +314,20 @@ modelsummary(modelrl,
              output = "kableExtra")
 ```
 
-La Tabla \@ref(tab:rlog1a), nos muestra el efecto (al 0.05) positivo (nuevamente el signo ayuda) de ser mujer en ser voluntario . 
+La Tabla \@ref(tab:rlog1a), nos muestra el efecto (significativo al 0.05) positivo (nuevamente el signo ayuda) de ser mujer en ser voluntario .  
 
-Los coeficientes de las Tablas \@ref(tab:rlog1)  y Tabla \@ref(tab:rlog1a), como muestran al logaritmo del odds, no son fáciles de interpretar. Pero, si le aplicas exponencial obtendrás un o dds ratio: veamos el caso del coeficiente`r round(coef(rlog1)["sexfemale"],3)` de la Tabla \@ref(tab:rlog1a):
+Recuerda que este tema de la categoría de referencia se aplica a todo tipo de regresión. 
+
+## Interpretación
+
+Los coeficientes de las Tablas \@ref(tab:rlog1)  y Tabla \@ref(tab:rlog1a), como modelan al logaritmo del odds, no son fáciles de interpretar. Pero, si le aplicamos exponencial obtendrás un odds ratio: veamos el caso del coeficiente`r round(coef(rlog1)["sexfemale"],3)` de la Tabla \@ref(tab:rlog1a):
 
 ```{r expCoefFem, echo=TRUE}
 sexF=coef(rlog1)["sexfemale"]
 exp(sexF)
 ```
 
-Este valor ya lo conociamos, pero ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. 
+Este valor ya lo conocíamos, pero ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Lo que es más, sabemos que el hecho de ser mujer eleva en un factor de 0.28 al odds ratio de ser voluntario que si el entrevistado fuera hombre. 
 
 Algo importante ahora es que con la regresión logística ya podemos tener predictores numéricos, lo que escapa de la utilidad de las tablas de contingencia. Así, podemos en el modelo II añadir una numérica a los predictores:
 
@@ -299,7 +355,7 @@ modelsummary(modelsrl,
 
 ```
 
-Probemos ahora el modelo III, el que completa la hipótesis de los investigadores:
+En el modelo II notamos que el efecto de ser mujer disminuye, pero no mucho. Probemos ahora el modelo III, el que completa la hipótesis de los investigadores:
 
 > El ofrecerse como voluntario está relacionado con el sexo de la persona, su nivel de neuroticismo y su nivel de extraversión.
 
@@ -311,6 +367,7 @@ rlog3=glm(h3, data=vol,family = binomial)
 
 summary(rlog3)
 ```
+
 
 Ahora, a todos los modelos juntos \@ref(tab:rlogALL):
 
@@ -332,15 +389,34 @@ modelsummary(modelsrl,
              output = "kableExtra")
 ```
 
-## Interpretación
 
-Del modelo III tenemos que los coeficientes son mayores que *uno* [^1]. Todos ellos podrían tener un efecto positivo. Pero el intervalo de confianza de la *neuroticism* incluye al 1 (además que la probabilidad que sea 1 es mayor al 10%, lo que contribuye a aceptar que no tendría efecto), por lo que lo consideramos no significativo.
+
+Del modelo III tenemos que:
+
+* Tres coeficientes son mayores que *uno* (podrían tener un efecto positivo, pero falta revisar otra información).
+* El intervalo de confianza de la *neuroticism* incluye al 1.[^1]
+* El p-valor de *neuroticism* es mayor a 0.1 (la probabilidad que sea 1 -no tenga efecto- es mayor al 10%, lo que contribuye a aceptar que no tendría efecto), por lo que lo consideramos no significativo.
 
 [^1]: Al igual que en la Poisson, no queremos que el intervalo de confianza incluya el *uno*.
 
-El coeficiente de la variable sexo con hombre como referencia es `r round(exp(coef(rlog3)["sexfemale"]),4)`, ese número es el factor por el que se multiplica en promedio el odds de ser voluntario cuando se es mujer, o dicho de otra manera el odds de ser voluntario aumenta en `r 100*round(abs(1-exp(coef(rlog3)["sexfemale"])),4)`% cuando se es mujer (y no hombre).
+El coeficiente de la variable sexo con hombre como referencia es:
+```{r}
+round(exp(coef(rlog3)["sexfemale"]),4)
+```
+Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cuando se es mujer, o dicho de otra manera el odds ratio de ser voluntario se eleva en este procentaje:
+```{r}
+100*round(abs(1-exp(coef(rlog3)["sexfemale"])),4)
+```
 
-De manera similar, el coeficiente de la variable extraversión es `r round(exp(coef(rlog3)["extraversion"]),4)`, ese número es el factor por el que se multiplica en promedio el odds de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds de ser voluntario aumenta en `r 100*round(abs(1-exp(coef(rlog3)["extraversion"])),4)`% cada vez que la escala de extroversión aumenta en uno.
+De manera similar, el coeficiente de la variable extraversión es:
+
+```{r}
+round(exp(coef(rlog3)["extraversion"]),4)
+```
+Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds ratio de ser voluntario se eleva en este porcentaje cada vez que la escala de extroversión aumenta en uno:
+```{r}
+100*round(abs(1-exp(coef(rlog3)["extraversion"])),4)
+```
 
 Podemos calcular los coeficientes estandarizados [@ibm_spss_computing_2020] para saber cuál de los predictores del modelo III tiene mayor efecto (ver Tabla \@ref(tab:stdCoefs)).
 
@@ -396,7 +472,7 @@ En la Figura \@ref(fig:finplots) se nota claramente por qué el neuroticismo no 
 
 ## Evaluando modelo seleccionado
 
-Cuando usamos una regresión logística queremos predecir probabilidades, en este caso, ante una combinación de los predictores X, qué **probabilidad** se obtiene con esta regresión para ser voluntario. Esos son los valor **ajustados** (*fitted*) que te entrega el modelo, y nos servirá para evaluar si nos hemos acercado al Y original. Calculemos tales probabilidades:
+Cuando usamos una regresión logística queremos predecir probabilidades, en este caso, ante una combinación de los predictores **X**, qué **probabilidad** se obtiene con esta regresión para ser voluntario. Esos son los valor **ajustados** (*fitted*) que te entrega el modelo, y nos servirá para evaluar si nos hemos acercado al **Y** original. Calculemos tales probabilidades:
 
 ```{r}
 predictedProbs <- predict(rlog3, vol,type = "response")
