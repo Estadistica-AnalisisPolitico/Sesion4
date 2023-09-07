@@ -569,27 +569,44 @@ Recuérdese que tenemos en **predicted** las probabilidades de cada caso:
 head(vol$predicted)
 ```
 
-Pero NO sabemos cuando afecta cada variable la probabilidad de ser voluntario en promedio. Para ello pedimos efectos marginales [@ford_beginners_2022], los que podemos ver en la Tabla \@ref(tab:marginals-table)
+Cuando analizábamos le regresión Gaussiana decíamos que si el covariado aumentaba en una unidad, el coeficiente del covariado representaba el cambio promedio en la dependiente. Ese es el efecto marginal  del covariado.
+Esa interpretación no se puede saber con ninguno de los valores calculados hasta ahora para la regresión logística. Para ello, necesitamos calcular de manera expresa esos efectos marginales [@ford_beginners_2022]:
 
-```{r  marginals-table, message=FALSE}
+```{r  }
 # interpracion usando marginal effects:
 library(margins)
 # 
+margins(rlog3)
 
-marginalsData=summary(margins(rlog3)) 
-marginalsData%>% kable(caption = "Efectos Marginales Promedio (AME)- Modelo III") %>%kableExtra::kable_styling(full_width = T)
 
 ```
 
-La Tabla \@ref(tab:marginals-table) nos indica, por ejemplo, que en promedio, el incremento de un punto en la variable *extraversion* aumenta en `r round(marginalsData$AME[['extraversion']],6)` [^5] la probabilidad de ser voluntario. Los valores de la Tabla \@ref(tab:marginals-table) podemos verlos gráficamente en la Figura \@ref(fig:marginals-plot).
+Estos coeficientes sí indican cuanto aumentaría la probabilidad de ser voluntario, en este caso, cuando el predictor aumenta en una unidad. Sin embargo, recordemos que sabemos de antemano que no todos estos covariados son significativos. Veamos los intervalos de confianza  en la Tabla \@ref(tab:marginals-table):
 
-[^5]: También podría usar los valores del intervalo de confianza de los AME en tu interpretación.
+```{r marginals-table, message=FALSE}
+
+marginalsData=summary(margins(rlog3))
+marginalsData%>% kable(caption = "Efectos Marginales Promedio (AME)- Modelo III") %>%kableExtra::kable_styling(full_width = T)
+```
+
+Los valores de la Tabla \@ref(tab:marginals-table) podemos verlos gráficamente en la Figura \@ref(fig:marginals-plot).
+
 
 ```{r marginals-plot, fig.cap="Efectos Marginales Promedio (AME)"}
 library(ggplot2)
 base= ggplot(marginalsData,aes(x=factor, y=AME)) + geom_point()
 base +  geom_errorbar(aes(ymin=lower, ymax=upper))
 ```
+
+El paquete *margins* tiene la función **plot** para lograr lo mismo que *ggplot2*:
+
+```{r, fig.cap="Efectos Marginales Promedio (AME) sin usar ggplot2"}
+
+plot(margins(rlog3))
+
+```
+
+
 
 ------------------------------------------------------------------------
 
