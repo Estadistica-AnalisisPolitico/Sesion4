@@ -307,14 +307,14 @@ Recuerda que este tema de la categoría de referencia se aplica a todo tipo de r
 
 ## Interpretación
 
-Los coeficientes de las Tablas \@ref(tab:rlog1) y Tabla \@ref(tab:rlog1a), como modelan al logaritmo del odds, no son fáciles de interpretar. Pero, si le aplicamos exponencial obtendrás un odds ratio: veamos el caso del coeficiente`r round(coef(rlog1)["sexfemale"],3)` de la Tabla \@ref(tab:rlog1a):
+Los coeficientes de las Tablas \@ref(tab:rlog1) y Tabla \@ref(tab:rlog1a), como modelan al logaritmo del odds, no son fáciles de interpretar. Pero, si le aplicamos exponencial obtendrás un odds ratio: veamos el caso del coeficiente `r round(coef(rlog1)["sexfemale"],3)` de la Tabla \@ref(tab:rlog1a):
 
 ```{r expCoefFem, echo=TRUE}
 sexF=coef(rlog1)["sexfemale"]
 exp(sexF)
 ```
 
-Este valor ya lo conocíamos, pero ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Lo que es más, sabemos que el hecho de ser mujer eleva en un factor de 0.28 al odds ratio de ser voluntario que si el entrevistado fuera hombre.
+Este valor ya lo conocíamos, pero ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Lo que es más, sabemos que el hecho de ser mujer eleva en promedio en un factor de 0.28 al odds ratio de ser voluntario que si el entrevistado fuera hombre.
 
 Algo importante ahora es que con la regresión logística ya podemos tener predictores numéricos, lo que escapa de la utilidad de las tablas de contingencia. Así, podemos en el modelo II añadir una numérica a los predictores:
 
@@ -389,7 +389,7 @@ El coeficiente de la variable sexo con hombre como referencia es:
 round(exp(coef(rlog3)["sexfemale"]),4)
 ```
 
-Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cuando se es mujer, o dicho de otra manera el odds ratio de ser voluntario se eleva en este procentaje:
+Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cuando se es mujer, o dicho de otra manera el odds ratio de ser voluntario se eleva en en promedio en ese porcentaje:
 
 ```{r}
 100*round(abs(1-exp(coef(rlog3)["sexfemale"])),4)
@@ -401,7 +401,7 @@ De manera similar, el coeficiente de la variable extraversión es:
 round(exp(coef(rlog3)["extraversion"]),4)
 ```
 
-Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds ratio de ser voluntario se eleva en este porcentaje cada vez que la escala de extroversión aumenta en uno[^2]:
+Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds ratio de ser voluntario se eleva en promedio en este porcentaje cada vez que la escala de extroversión aumenta en uno[^2]:
 
 [^2]: Nota que si el coeficiente fuese menor que UNO, el valor que se obtiene debe interpretarse como el porcentaje de reducción.
 
@@ -442,7 +442,7 @@ lrtest(rlog1,rlog2, rlog3) %>%
 kable(caption = "Tabla LRT para comparar modelos")%>%kableExtra::kable_styling(full_width = FALSE)
 ```
 
-Como vemos en la Tabla \@ref(tab:LRTall), pasar del modelo 1 al modelo 2 es no significativo (probabilidad de similitud es más de 90%), por lo que no se rechaza la hipotesis nula de igualdad de modelos. Pero sí es significativo pasar del modelo 2 al modelo 3.
+Como vemos en la Tabla \@ref(tab:LRTall), pasar del modelo 1 al modelo 2 es no significativo (probabilidad de similitud entre los modelos es mayor que 90%), por lo que no se rechaza la hipotesis nula de igualdad de modelos. Pero sí es significativo pasar del modelo 2 al modelo 3.
 
 Podemos comparar los modelos I, II, y III de manera gráfica en la Figura \@ref(fig:finplots).
 
@@ -581,7 +581,7 @@ margins(rlog3)
 
 ```
 
-Estos coeficientes sí indican cuanto aumentaría la probabilidad de ser voluntario, en este caso, cuando el predictor aumenta en una unidad. Sin embargo, recordemos que sabemos de antemano que no todos estos covariados son significativos. Veamos los intervalos de confianza  en la Tabla \@ref(tab:marginals-table):
+Estos coeficientes sí indican cuanto aumentaría en promedio la probabilidad de ser voluntario, en este caso, cuando el predictor aumenta en una unidad. Sin embargo, recordemos que sabemos de antemano que no todos estos covariados son significativos. Veamos los intervalos de confianza  en la Tabla \@ref(tab:marginals-table):
 
 ```{r marginals-table, message=FALSE}
 

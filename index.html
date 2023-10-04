@@ -3669,12 +3669,12 @@ RMSE
 </div>
 <div id="interpretación" class="section level2" number="3.2">
 <h2><span class="header-section-number">3.2</span> Interpretación</h2>
-<p>Los coeficientes de las Tablas <a href="#tab:rlog1">3.1</a> y Tabla <a href="#tab:rlog1a">3.2</a>, como modelan al logaritmo del odds, no son fáciles de interpretar. Pero, si le aplicamos exponencial obtendrás un odds ratio: veamos el caso del coeficiente0.249 de la Tabla <a href="#tab:rlog1a">3.2</a>:</p>
+<p>Los coeficientes de las Tablas <a href="#tab:rlog1">3.1</a> y Tabla <a href="#tab:rlog1a">3.2</a>, como modelan al logaritmo del odds, no son fáciles de interpretar. Pero, si le aplicamos exponencial obtendrás un odds ratio: veamos el caso del coeficiente 0.249 de la Tabla <a href="#tab:rlog1a">3.2</a>:</p>
 <pre class="r"><code>sexF=coef(rlog1)[&quot;sexfemale&quot;]
 exp(sexF)</code></pre>
 <pre><code>## sexfemale 
 ##  1.283184</code></pre>
-<p>Este valor ya lo conocíamos, pero ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Lo que es más, sabemos que el hecho de ser mujer eleva en un factor de 0.28 al odds ratio de ser voluntario que si el entrevistado fuera hombre.</p>
+<p>Este valor ya lo conocíamos, pero ahora sabemos que el efecto de sexo es significativo gracias a la regresión logística, algo que no sabíamos con las tablas de contingencia. Lo que es más, sabemos que el hecho de ser mujer eleva en promedio en un factor de 0.28 al odds ratio de ser voluntario que si el entrevistado fuera hombre.</p>
 <p>Algo importante ahora es que con la regresión logística ya podemos tener predictores numéricos, lo que escapa de la utilidad de las tablas de contingencia. Así, podemos en el modelo II añadir una numérica a los predictores:</p>
 <blockquote>
 <p>El ofrecerse como voluntario está relacionado con el sexo de la persona, y su nivel de neuroticismo.</p>
@@ -3861,10 +3861,6 @@ summary(rlog3)</code></pre>
 <pre><code>## 
 ## Call:
 ## glm(formula = h3, family = binomial, data = vol)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.3977  -1.0454  -0.9084   1.2601   1.6849  
 ## 
 ## Coefficients:
 ##               Estimate Std. Error z value Pr(&gt;|z|)    
@@ -4108,7 +4104,7 @@ Log.Lik.
 <pre class="r"><code>round(exp(coef(rlog3)[&quot;sexfemale&quot;]),4)</code></pre>
 <pre><code>## sexfemale 
 ##    1.2651</code></pre>
-<p>Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cuando se es mujer, o dicho de otra manera el odds ratio de ser voluntario se eleva en este procentaje:</p>
+<p>Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cuando se es mujer, o dicho de otra manera el odds ratio de ser voluntario se eleva en en promedio en ese porcentaje:</p>
 <pre class="r"><code>100*round(abs(1-exp(coef(rlog3)[&quot;sexfemale&quot;])),4)</code></pre>
 <pre><code>## sexfemale 
 ##     26.51</code></pre>
@@ -4116,7 +4112,7 @@ Log.Lik.
 <pre class="r"><code>round(exp(coef(rlog3)[&quot;extraversion&quot;]),4)</code></pre>
 <pre><code>## extraversion 
 ##       1.0686</code></pre>
-<p>Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds ratio de ser voluntario se eleva en este porcentaje cada vez que la escala de extroversión aumenta en uno<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>:</p>
+<p>Ese número es el factor por el que se multiplica en promedio el odds ratio de ser voluntario cada vez que la escala de extroversión aumenta en uno, o dicho de otra manera el odds ratio de ser voluntario se eleva en promedio en este porcentaje cada vez que la escala de extroversión aumenta en uno<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>:</p>
 <pre class="r"><code>100*round(abs(1-exp(coef(rlog3)[&quot;extraversion&quot;])),4)</code></pre>
 <pre><code>## extraversion 
 ##         6.86</code></pre>
@@ -4257,7 +4253,7 @@ NA
 </tr>
 </tbody>
 </table>
-<p>Como vemos en la Tabla <a href="#tab:LRTall">3.6</a>, pasar del modelo 1 al modelo 2 es no significativo (probabilidad de similitud es más de 90%), por lo que no se rechaza la hipotesis nula de igualdad de modelos. Pero sí es significativo pasar del modelo 2 al modelo 3.</p>
+<p>Como vemos en la Tabla <a href="#tab:LRTall">3.6</a>, pasar del modelo 1 al modelo 2 es no significativo (probabilidad de similitud entre los modelos es mayor que 90%), por lo que no se rechaza la hipotesis nula de igualdad de modelos. Pero sí es significativo pasar del modelo 2 al modelo 3.</p>
 <p>Podemos comparar los modelos I, II, y III de manera gráfica en la Figura <a href="#fig:finplots">3.1</a>.</p>
 <pre class="r"><code>library(ggplot2)
 dotwhisker::dwplot(list(Logit_I=rlog1,Logit_II=rlog2,Logit_III=rlog3),
@@ -4381,7 +4377,7 @@ margins(rlog3)</code></pre>
 <pre><code>## glm(formula = h3, family = binomial, data = vol)</code></pre>
 <pre><code>##  neuroticism extraversion sexfemale
 ##      0.00152      0.01585   0.05623</code></pre>
-<p>Estos coeficientes sí indican cuanto aumentaría la probabilidad de ser voluntario, en este caso, cuando el predictor aumenta en una unidad. Sin embargo, recordemos que sabemos de antemano que no todos estos covariados son significativos. Veamos los intervalos de confianza en la Tabla <a href="#tab:marginals-table">3.7</a>:</p>
+<p>Estos coeficientes sí indican cuanto aumentaría en promedio la probabilidad de ser voluntario, en este caso, cuando el predictor aumenta en una unidad. Sin embargo, recordemos que sabemos de antemano que no todos estos covariados son significativos. Veamos los intervalos de confianza en la Tabla <a href="#tab:marginals-table">3.7</a>:</p>
 <pre class="r"><code>marginalsData=summary(margins(rlog3))
 marginalsData%&gt;% kable(caption = &quot;Efectos Marginales Promedio (AME)- Modelo III&quot;) %&gt;%kableExtra::kable_styling(full_width = T)</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -4425,7 +4421,7 @@ extraversion
 0.0033068
 </td>
 <td style="text-align:right;">
-4.7928752
+4.7928761
 </td>
 <td style="text-align:right;">
 0.0000016
@@ -4448,10 +4444,10 @@ neuroticism
 0.0027128
 </td>
 <td style="text-align:right;">
-0.5603961
+0.5603962
 </td>
 <td style="text-align:right;">
-0.5752093
+0.5752092
 </td>
 <td style="text-align:right;">
 -0.0037968
