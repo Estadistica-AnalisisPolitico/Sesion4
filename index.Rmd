@@ -476,15 +476,15 @@ En la Figura \@ref(fig:finplots) se nota claramente por qué el neuroticismo no 
 Cuando usamos una regresión logística queremos predecir probabilidades, en este caso, ante una combinación de los predictores **X**, qué **probabilidad** se obtiene con esta regresión para ser voluntario. Esos son los valor **ajustados** (*fitted*) que te entrega el modelo, y nos servirá para evaluar si nos hemos acercado al **Y** original. Calculemos tales probabilidades:
 
 ```{r}
-predictedProbs <- predict(rlog3, vol,type = "response")
+vol$predictedProbs <- predict(rlog3, vol,type = "response")
 # veamos algunos de ellos
-head(predictedProbs)
+head(vol$predictedProbs)
 ```
 
-Aquí podemos usar estos valores para crear el 0 o 1 predicho:
+Aquí podemos usar estos valores para crear el 0 o 1:
 
 ```{r}
-vol$predicted=ifelse(predictedProbs>0.5,"yes","no")
+vol$predicted=ifelse(vol$predictedProbs>0.5,"yes","no")
 ```
 
 Veamos algunas filas de estas dos columnas:
@@ -493,7 +493,7 @@ Veamos algunas filas de estas dos columnas:
 head(vol[,c("predicted","volunteer")],10)
 ```
 
-La columns *predicted* busca ser la misma que la columna *volunteer*, pero en algunos casos puede fallar.
+La columns *predicted* busca ser la misma que la columna *volunteer*, pero en algunos casos fallará.
 
 Para saber qué tanto se acertó creamos una Matriz de Confusión [@suresh_what_2021] usando el paquete **cvms** [^4] en la Figura \@ref(fig:plotConfusionMatrix).
 
@@ -535,13 +535,12 @@ ConfMatrix$Sensitivity
 ConfMatrix$Specificity
 ```
 
-Una medida general es el índice de Kappa:
+Una medida general de resumen es el índice de Kappa: Este índice vale **1** si la predicción es perfecta, y **0** si fallan todas las predicciones.
 
 ```{r}
 ConfMatrix$Kappa
 ```
 
-Este índice vale **1** si la predicción es perfecta, y **0** si fallan todas las predicciones.
 
 ## Prediciendo valores concretos
 
@@ -573,13 +572,14 @@ predict(object = rlog3, newdata = ToInput3, type = "response")
 
 ## Efectos Marginales
 
-Recuérdese que tenemos en **predicted** las probabilidades de cada caso:
+Recuérdese qué tenemos en **volunteer**, **predicted** y **predictedProbs** :
 
 ```{r}
-head(vol$predicted)
+head(vol[,c('volunteer','predicted','predictedProbs')])
 ```
 
 Cuando analizábamos le regresión Gaussiana decíamos que si el covariado aumentaba en una unidad, el coeficiente del covariado representaba el cambio promedio en la dependiente. Ese es el efecto marginal  del covariado.
+
 Esa interpretación no se puede saber con ninguno de los valores calculados hasta ahora para la regresión logística. Para ello, necesitamos calcular de manera expresa esos efectos marginales [@ford_beginners_2022]:
 
 ```{r  }
@@ -591,7 +591,7 @@ margins(rlog3)
 
 ```
 
-Estos coeficientes sí indican cuanto aumentaría en promedio la probabilidad de ser voluntario, en este caso, cuando el predictor aumenta en una unidad. Sin embargo, recordemos que sabemos de antemano que no todos estos covariados son significativos. Veamos los intervalos de confianza  en la Tabla \@ref(tab:marginals-table):
+Estos coeficientes sí indican cuanto aumentaría en promedio la probabilidad de ser voluntario, cuando el predictor aumenta en una unidad. Sin embargo, recordemos que sabemos de antemano que no todos estos covariados son significativos. Veamos los intervalos de confianza  en la Tabla \@ref(tab:marginals-table):
 
 ```{r marginals-table, message=FALSE}
 
@@ -608,14 +608,13 @@ base= ggplot(marginalsData,aes(x=factor, y=AME)) + geom_point()
 base +  geom_errorbar(aes(ymin=lower, ymax=upper))
 ```
 
-El paquete *margins* tiene la función **plot** para lograr lo mismo que *ggplot2*:
 
-```{r, fig.cap="Efectos Marginales Promedio (AME) sin usar ggplot2"}
+Ya sabemos que si el intervalo incluye al cero, ese covariado no será significativo.
 
-plot(margins(rlog3))
-
+```{r, echo=FALSE, eval=FALSE}
+library(knitr)
+knitr::purl('index.Rmd','sesion4.R',documentation = 0)
 ```
-
 
 
 ------------------------------------------------------------------------
